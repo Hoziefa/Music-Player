@@ -16,10 +16,9 @@ const songsTitle = ["hey", "summer", "ukulele"];
 let currentSong = 2;
 
 const loadSong = song => {
-    elements.title.textContent = song;
+    const { title, audio, cover } = elements;
 
-    elements.audio.src = `music/${song}.mp3`;
-    elements.cover.src = `images/${song}.jpg`;
+    [title.textContent, audio.src, cover.src] = [song, `music/${song}.mp3`, `images/${song}.jpg`];
 };
 
 const playSong = _ => {
@@ -38,15 +37,12 @@ const playSong = _ => {
     }
 };
 
-const playNextSong = _ => {
-    currentSong === songsTitle.length - 1 ? (currentSong = 0) : ++currentSong;
-    loadSong(songsTitle[currentSong]);
-    playSong();
-};
+const playPrevNextSong = direction => {
+    if (direction === "prev") currentSong === 0 ? (currentSong = songsTitle.length - 1) : --currentSong;
+    else if (direction === "next") currentSong === songsTitle.length - 1 ? (currentSong = 0) : ++currentSong;
 
-const playPrevSong = _ => {
-    currentSong === 0 ? (currentSong = songsTitle.length - 1) : --currentSong;
     loadSong(songsTitle[currentSong]);
+
     playSong();
 };
 
@@ -57,9 +53,9 @@ elements.musicContainer.addEventListener("click", ({ target, offsetX: x }) => {
 
     target.matches(`#${playBtn.id}, #${playBtn.id} *`) && playSong();
 
-    target.matches(`#${prevBtn.id}, #${prevBtn.id} *`) && playPrevSong();
+    target.matches(`#${prevBtn.id}, #${prevBtn.id} *`) && playPrevNextSong("prev");
 
-    target.matches(`#${nextBtn.id}, #${nextBtn.id} *`) && playNextSong();
+    target.matches(`#${nextBtn.id}, #${nextBtn.id} *`) && playPrevNextSong("next");
 
     if (target.matches(`#${progressContainer.id}, #${progress.id}`)) {
         audio.currentTime = (x / progressContainer.offsetWidth) * audio.duration;
@@ -69,5 +65,5 @@ elements.musicContainer.addEventListener("click", ({ target, offsetX: x }) => {
 elements.audio.addEventListener("timeupdate", ({ currentTarget: { currentTime, duration, ended } }) => {
     elements.progress.style.width = `${(currentTime / duration) * 100}%`;
 
-    ended && playNextSong();
+    ended && playPrevNextSong("next");
 });
